@@ -31,12 +31,12 @@ pip install anymoment[cli]
    {
      "skills": {
        "load": {
-         "extraDirs": ["/path/to/RepeatWiz/Skill"]
+         "extraDirs": ["/path/to/AnyMoment/Skill"]
        }
      }
    }
    ```
-   Replace `/path/to/RepeatWiz/Skill` with your actual path to this `Skill` directory (e.g. `E:\work\Sineways\RepeatWiz\Skill` on Windows). OpenClaw will discover the skill from the `SKILL.md` in this folder.
+   Replace `/path/to/AnyMoment/Skill` with your actual path to this `Skill` directory (e.g. `E:\work\Sineways\AnyMoment\Skill` on Windows). OpenClaw will discover the skill from the `SKILL.md` in this folder.
 
    **Or**, if the skill is published to ClawHub:
    ```bash

@@ -184,4 +184,4 @@ Output modes: default (human-readable), `--raw` (JSON), `--pipe` (IDs only, wher
 ## References
 
 - `references/cli.md` — full command map and flags.
-- Backend recurrence parser (for create/update semantics): `RepeatWizAPI/app/recurrence/parser/llm_documentation.md` — time handling, full-day vs timed, recurrence types, and when to use one-off vs recurring.
+- Backend recurrence parser (for create/update semantics): in the AnyMoment API repo, `app/recurrence/parser/llm_documentation.md` — time handling, full-day vs timed, recurrence types, and when to use one-off vs recurring.
