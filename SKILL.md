@@ -1,13 +1,29 @@
 ---
 name: anymoment
-description: Manage schedules, recurring events, and calendars via the AnyMoment CLI (`anymoment`). Use for listing calendars, creating/updating/deleting events, viewing agendas, expanding instances, finding free time, and configuring defaults. Designed to be portable: assumes `anymoment` is installed and on PATH (or ANYMOMENT_BIN).
+description: Manage schedules, recurring events, and calendars via the AnyMoment CLI (`anymoment`). Use for listing calendars, creating/updating/deleting events, viewing agendas, expanding instances, finding free time, and configuring defaults. Install the CLI from PyPI first; then use the skill.
 ---
 
-## Assumptions (portable)
+## Install the CLI from PyPI
 
-- `anymoment` CLI is installed and available on `PATH`.
+**Before using this skill**, install the AnyMoment CLI so the `anymoment` command is available. Prefer the official PyPI package:
+
+```bash
+pip install anymoment[cli]
+```
+
+- **With venv/conda:** Activate the environment first, then run the command above. The `anymoment` executable will be on `PATH` for that environment.
+- **System-wide (Linux/macOS):** `pip install --user anymoment[cli]` or `sudo pip install anymoment[cli]` if you want it available for all users.
+- **Windows:** `py -m pip install anymoment[cli]` or `pip install anymoment[cli]` from a terminal where Python is on PATH.
+
+**Verify:** Run `anymoment --version`. If the command is not found, ensure the Python scripts directory (e.g. `Scripts` on Windows, `bin` on Unix) is on your `PATH`, or set `ANYMOMENT_BIN` to the full path of the `anymoment` executable.
+
+**After install:** Run `anymoment auth login` once to authenticate; tokens are stored under `~/.anymoment/`. Then use the commands below.
+
+## Assumptions (after install)
+
+- `anymoment` CLI is installed (see above) and available on `PATH` (or `ANYMOMENT_BIN` points to it).
 - Authentication is handled by the CLI (tokens/config under `~/.anymoment/`).
-- Optional: set `ANYMOMENT_BIN` to a full path to the `anymoment` executable.
+- Optional: set `ANYMOMENT_BIN` to a full path to the `anymoment` executable if it is not on `PATH`.
 
 ## Safety / operating rules
 
