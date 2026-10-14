@@ -1,0 +1,10 @@
+{
+  "detail": {
+    "code": "auth_failed",
+    "message": "The calendar server rejected the login.",
+    "next_step": "Check the username and app password, then reconnect the account.",
+    "host": "caldav.example.com",
+    "calendar_name": "Work",
+    "status": 401
+  }
+}
