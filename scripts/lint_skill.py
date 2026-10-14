@@ -66,9 +66,10 @@ GLOBAL_FLAGS = frozenset(
         "--dry-run",
         "--idempotency-key",
         "--profile",
+        "--api-key",
     }
 )
-GLOBAL_VALUES = frozenset({"--fields", "--idempotency-key", "--profile"})
+GLOBAL_VALUES = frozenset({"--fields", "--idempotency-key", "--profile", "--api-key"})
 FENCE_LANGS = {"", "bash", "sh", "shell", "console"}
 
 SCAN_SUFFIXES = {".md", ".py", ".yml", ".yaml", ".ps1", ".toml", ".txt", ".json"}
@@ -163,7 +164,7 @@ _SEARCH_FLAGS = _AGENDA_FLAGS + [
 ]
 _SEARCH_VALUES = _AGENDA_VALUES + ["--limit", "-l", "--offset"]
 
-# Subcommands of anymoment 2.0. Global agent flags are added in _check_args.
+# Subcommands of anymoment 2.1. Global agent flags are added in _check_args.
 _WINDOW_FLAGS = ["--calendar", "-c", "--host", "-h", "--raw", "--pipe"]
 _WINDOW_VALUES = ["--calendar", "-c", "--host", "-h"]
 ANYMOMENT_COMMANDS: dict = {
@@ -176,6 +177,7 @@ ANYMOMENT_COMMANDS: dict = {
         ),
         "resend-verification": _host_leaf(),
         "logout": _host_leaf(),
+        "status": _host_leaf(),
     },
     "create": _leaf(_CREATE_FLAGS, 1, _CREATE_VALUES),
     "update": _leaf(_UPDATE_FLAGS, 1, _UPDATE_VALUES),
@@ -219,6 +221,45 @@ ANYMOMENT_COMMANDS: dict = {
         "delete": _leaf([], 1, []),
         "share": _leaf(["--role", "--raw"], 2, ["--role"]),
         "webhook-url": _leaf(["--raw"], 1, []),
+        "subscriptions": {
+            "list": _leaf(["--host", "-h", "--raw"], 1, ["--host", "-h"]),
+            "create": _leaf(
+                [
+                    "--url",
+                    "--event-type",
+                    "--secret",
+                    "--offset-seconds",
+                    "--host",
+                    "-h",
+                    "--raw",
+                ],
+                1,
+                ["--url", "--event-type", "--secret", "--offset-seconds", "--host", "-h"],
+            ),
+            "get": _leaf(["--host", "-h", "--raw"], 2, ["--host", "-h"]),
+            "update": _leaf(
+                [
+                    "--url",
+                    "--event-type",
+                    "--secret",
+                    "--offset-seconds",
+                    "--active",
+                    "--inactive",
+                    "--host",
+                    "-h",
+                    "--raw",
+                ],
+                2,
+                ["--url", "--event-type", "--secret", "--offset-seconds", "--host", "-h"],
+            ),
+            "delete": _leaf(["--host", "-h"], 2, ["--host", "-h"]),
+            "deliveries": _leaf(
+                ["--limit", "-l", "--host", "-h", "--raw"],
+                2,
+                ["--limit", "-l", "--host", "-h"],
+            ),
+            "replay": _leaf(["--host", "-h", "--raw"], 3, ["--host", "-h"]),
+        },
         "add-event": _leaf(
             ["--display-order", "--color", "--host", "-h", "--raw"],
             2,

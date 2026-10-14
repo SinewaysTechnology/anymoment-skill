@@ -11,19 +11,21 @@ This folder is the **AnyMoment skill** for AI agents and humans: it teaches how 
 **Before using this skill**, install the AnyMoment CLI so the `anymoment` command is available:
 
 ```bash
-pip install "anymoment[cli]>=2.0.1"
+pip install "anymoment[cli]>=2.1.0"
 ```
+
+AnyMoment 2.1 requires Python 3.10 or newer.
 
 - Use the same Python environment that your agent (e.g. OpenClaw) uses.
 - **Verify:** run `anymoment --version`. If the command is not found, add the Python `Scripts` (Windows) or `bin` (Unix) directory to `PATH`, or set `ANYMOMENT_BIN` to the full path of the `anymoment` executable.
-- **Then:** export `ANYMOMENT_TOKEN` for non-interactive use, or run `anymoment auth login` once on a TTY. Tokens are stored under `~/.anymoment/`.
+- **Then:** the user creates a key in AnyMoment settings, under API keys, and chooses access and calendars. Set `ANYMOMENT_API_KEY` (or pass `--api-key`). Check with `am auth status`. It shows the method and the key prefix, never the secret. Do not print the key or write it to logs. A session still works: export `ANYMOMENT_TOKEN`, or run `anymoment auth login` once on a TTY. Tokens are stored under `~/.anymoment/`. A key is used instead of a saved login or `ANYMOMENT_TOKEN`.
 
 ## What’s in this folder
 
 | Path | Purpose |
 |------|--------|
-| **`SKILL.md`** | Short cheat sheet for agents. JSON-first, relative dates, exit codes, and what to tell the user. |
-| **`references/cli.md`** | Command map, batch input, free-time steps, and write examples. |
+| **`SKILL.md`** | Short cheat sheet for agents. JSON-first, API keys, relative dates, exit codes, and what to tell the user. |
+| **`references/cli.md`** | Command map, API key errors, webhook subscriptions, batch input, free-time steps, and write examples. |
 | **`scripts/`** | Helpers: `anymoment_api.py` (JSON results with events, failures, and error fields), `anymoment_run.py` (UTF-8 + ANYMOMENT_BIN shim), `date_ranges.py` (ISO bounds when a phrase is not enough), `examples_smoke.ps1` (smoke commands). |
 
 ## Install and use with OpenClaw
@@ -51,11 +53,15 @@ pip install "anymoment[cli]>=2.0.1"
 
 3. **Install the CLI from PyPI** (on the machine where OpenClaw runs):
    ```bash
-   pip install "anymoment[cli]>=2.0.1"
+   pip install "anymoment[cli]>=2.1.0"
    anymoment --version
    ```
 
-4. **Authenticate** (same user/environment as OpenClaw). Export `ANYMOMENT_TOKEN`, or on a TTY:
+4. **Authenticate** (same user/environment as OpenClaw). The user creates a key in AnyMoment settings, under API keys, and chooses access and calendars. Set `ANYMOMENT_API_KEY`, then:
+   ```bash
+   am auth status
+   ```
+   That shows the method and the key prefix. It does not print the secret. Do not print the key or write it to logs. `--api-key` sets the same credential for one command. A key is used instead of a saved login or `ANYMOMENT_TOKEN`. A session still works. Export `ANYMOMENT_TOKEN`, or on a TTY:
    ```bash
    anymoment auth login
    ```
@@ -72,6 +78,7 @@ pip install "anymoment[cli]>=2.0.1"
 
 | Goal | Command |
 |------|--------|
+| Which credential is in use? | `am auth status` |
 | What’s on today? | `am today --json --fields events,failures` |
 | What’s on this week? | `am week --json --fields events,failures` |
 | Create events from text | `am events create "Your natural language here" --dry-run` |
