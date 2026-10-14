@@ -5,7 +5,7 @@ description: Read and write AnyMoment calendars with the anymoment CLI 2.0. Use 
 
 # AnyMoment
 
-Install once: `pip install "anymoment[cli]>=2.0.0"`. Export `ANYMOMENT_TOKEN` so auth stays non-interactive. On a TTY, `anymoment auth login` stores a token under `~/.anymoment/`.
+Install once: `pip install "anymoment[cli]>=2.0.1"`. Export `ANYMOMENT_TOKEN` so auth stays non-interactive. On a TTY, `anymoment auth login` stores a token under `~/.anymoment/`.
 
 Lead with today, and ask only for the keys you will relay:
 
@@ -17,14 +17,14 @@ Lead with today, and ask only for the keys you will relay:
 - Cheap flag list: `anymoment schema`.
 - Windows are relative: today, tomorrow, this week, next week, next fri.
 - Exit codes: 0 ok, 2 usage, 3 auth, 4 not found, 5 conflict, 6 rate limited, 7 remote or sync. Exit 0 can still include `failures` or `sync_warnings`. Read them.
-- On a non-zero exit, stderr is `{"error": {"code", "user_message", "next_step", "retry_after"}}`. Tell the user `user_message` and `next_step`. On exit 6, mention `retry_after`.
+- On a non-zero exit, stderr is `{"error": {"code", "status", "user_message", "next_step", "retry_after"}}`. Tell the user `user_message` and `next_step`. On exit 6, mention `retry_after`.
 
 ## Core
 
 - Today, this week, next week: `am today --json --fields events,failures`, `am week --json --fields events,failures`, `am next --json --fields events,failures`
 - Another window: `am agenda "tomorrow" --json --fields events,failures`
 - Search: `am agenda search "standup" --json`
-- Create: `am create "Team sync Tuesdays at 2pm" --dry-run`, then the same command without `--dry-run`
+- Create: `am events create "Team sync Tuesdays at 2pm" --dry-run`, then the same command without `--dry-run`
 - Update: `am update EVENT_ID --title "New name" --yes`
 - Delete: `am rm EVENT_ID --yes`
 - Calendars: `am ls --json --fields result`
