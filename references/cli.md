@@ -1,76 +1,107 @@
-# AnyMoment CLI reference (agent-facing)
+# AnyMoment CLI 2.0 (agent reference)
 
-Default: `anymoment` is installed and on PATH.
+Requires `anymoment` / `am` from `pip install "anymoment[cli]>=2.0.0"`.
 
-## Use-case first (primary commands)
+Auth for a job: export `ANYMOMENT_TOKEN`. That skips the login prompt. On a TTY, `anymoment auth login` stores a token under `~/.anymoment/`. Without a TTY, login needs `--email` and `--password`. `anymoment auth resend-verification` sends the verification email again. `anymoment auth logout` drops the saved token.
 
-### Create events (extract + create)
+`--profile NAME` selects a config profile (`ANYMOMENT_PROFILE` does the same).
 
-- `anymoment create "TEXT" [--calendar "name or ID"] [--context TEXT] [--timezone TZ] [--model high|low|mega] [--host URL] [--raw]`
-- Uses **extract** endpoint: free-form text → one or more events created. `--calendar` optional; accepts calendar **name** or **ID**.
-- Alias: `anymoment events create "TEXT" [same options]` (also uses extract).
+## Output
 
-### Update event
+Put global flags after the subcommand.
 
-- `anymoment update <event-id> [--when "recurrence text"] [--title "name"] [--description "desc"] [--timezone TZ] [--model high|low|mega] [--host URL] [--raw]`
-- At least one of `--when`, `--title`, `--description` required. `--when` updates schedule via natural language.
-- Alias: `anymoment events update <event-id> [--when] [--title/--name] [--description] [same options]`.
+- `--json` prints one compact object, wrapped as `{"v":1, ...}`.
+- `--jsonl` prints one object per line when the payload is a list.
+- `--fields events,failures` keeps `v` plus those top-level keys. It does not walk nested event fields.
+- `--yes` skips the delete confirmation. Ask the user first, then pass it.
+- `--dry-run` shows a create, update, or delete without sending it.
+- `--idempotency-key` remembers the first local result and replays it. The API does not take this key.
+- `--raw` dumps the full document. Prefer `--json --fields`.
 
-### Agenda
+`anymoment schema` prints commands, aliases, flags, and exit codes. `anymoment help --json` prints that same document.
 
-- `anymoment agenda list [--start ISO] [--end ISO] [--calendar "name or ID(s), comma-separated"] [--no-cache] [--webhooks] [--raw] [--pipe]`
-  - Events + instances in a time window. Omit `--calendar` for all calendars. `--calendar` accepts **name(s)** or **ID(s)**.
-- `anymoment agenda search <query> [--start ISO] [--end ISO] [--calendar "name or ID(s)"] [--active|--inactive] [--limit N] [--offset N] [--no-instances] [--raw] [--pipe]`
-  - Fuzzy search over events.
+## Exit codes
 
-### List calendars
+| Code | Meaning |
+|------|---------|
+| 0 | Ok. `failures` or `sync_warnings` may still be present. Read them. |
+| 2 | Usage, HTTP 400, or HTTP 422. |
+| 3 | Auth. Missing token, HTTP 401, or an unverified email. |
+| 4 | Not found. |
+| 5 | Conflict. |
+| 6 | Rate limited. Read `retry_after`. |
+| 7 | Remote or sync: HTTP 403, HTTP 5xx, network, or a CalDAV failure. |
 
-- `anymoment calendars list [--active/--inactive] [--limit N] [--offset N] [--raw] [--pipe]`
-- Use names or IDs from here in `--calendar` elsewhere.
+Stderr on a non-zero exit, when `--json` or `--jsonl` is set:
 
----
+```json
+{"error":{"code":null,"next_step":"...","retry_after":null,"status":429,"user_message":"..."}}
+```
 
-## Auth / identity
+Tell the user `user_message` and `next_step`. Do not invent a next step when the field is null.
 
-- `anymoment auth login [--host URL]` (interactive)
-- `anymoment auth logout [--host URL]`
-- `anymoment tokens list`
-- `anymoment tokens clear`
-- `anymoment users me [--raw]`
+## Agenda
 
-## Config
+`am today`, `am week`, and `am next` are this day, this week, and next week. `am agenda "tomorrow"` and `am agenda "next fri"` take a relative window. The CLI resolves it in the config timezone.
 
-- `anymoment config set-url <url>`
-- `anymoment config set-timezone <IANA_TZ>`
-- `anymoment config set-calendar <calendar-id-or-name>`
-- `anymoment config show`
+`--json` agenda output:
 
-Env overrides: `ANYMOMENT_BASE_URL`, `ANYMOMENT_DEFAULT_TIMEZONE`, `ANYMOMENT_DEFAULT_CALENDAR`.
+```json
+{"v":1,"events":[{"event":{},"instances":[{"start":"...","end":"...","is_all_day":false}]}],"failures":[],"window":"today"}
+```
 
-## Calendars (other)
+Each failure has `event_id`, `event_name`, `message`, and may have `reason` and `is_google_synced`. Say the event name and the message before you suggest a meeting time.
 
-- `anymoment calendars create <name> [--description TEXT] [--timezone TZ] [--color COLOR] [--raw]`
-- `anymoment calendars get <id> [--raw]`
-- `anymoment calendars update <id> [--name NAME] [--description TEXT] [--timezone TZ] [--color COLOR] [--active/--inactive] [--raw]`
-- `anymoment calendars delete <id>`
-- `anymoment calendars share <id> <user-id> [--role ROLE] [--raw]`
-- `anymoment calendars webhook-url <id> [--raw]`
-- (add-event, remove-event, batch-add-events, batch-remove-events, update-share, unshare — see `anymoment calendars --help`)
+Search: `am agenda search "standup" --json`.
 
-## Events (other)
+ISO bounds, when a phrase is not enough: `anymoment agenda list --start START --end END --json --fields events,failures`. `scripts/date_ranges.py` still prints those bounds (`next-week`, or `--days-back` / `--days-forward`). Prefer a relative window when the CLI understands it.
 
-- `anymoment events list [--calendar "name or ID"] [--active/--inactive] [--limit N] [--offset N] [--minimal] [--raw] [--pipe]`
-- `anymoment events get <event-id> [--raw]`
-- `anymoment events delete <event-id>`
-- `anymoment events toggle <event-id> [--raw]`
-- `anymoment events instances <event-id> [--from DATE] [--to DATE] [--optimized] [--raw]`
-- `anymoment events next <event-id> [--raw]`
-- `anymoment events export <event-id> [--format ics|csv] [--from DATE] [--to DATE] [--out FILE]`
+## Writes
 
-## Output modes
+- Create: `am create "Team sync Tuesdays at 2pm" --calendar Work --dry-run`, then drop `--dry-run`.
+- Update: `am update EVENT_ID --when "every Tuesday at 11am" --title "New name" --yes`.
+- Delete: `am rm EVENT_ID --yes`.
+- Toggle: `anymoment events toggle EVENT_ID --json`.
+- Link: `anymoment calendars add-event CALENDAR EVENT_ID --json`.
+- Unlink: `anymoment calendars remove-event CALENDAR EVENT_ID --json`.
 
-- **Default:** human-readable.
-- **`--raw`:** full JSON.
-- **`--pipe`:** IDs only (where supported; for piping).
+A successful write can include `sync_warnings` or `google_export_warnings`. Relay each `user_message` and any `next_step`.
 
-Where `--calendar` is used, it accepts a calendar **name** or **ID** (and comma-separated names/IDs for agenda list/search).
+`google_origin: true`, or `external_origin.read_only: true`, means the event is a mirror. Do not update or delete it. Tell the user to edit the source calendar.
+
+Recurrence belongs in the create or `--when` text: "every Monday", "weekdays at 9am", "on the 1st of every month". A single day without "every" is one event: "dentist next Friday at 10am". No clock time means all day.
+
+## Free time
+
+1. `am week --json --fields events,failures` (or `am agenda "tomorrow" --json --fields events,failures`). Omit `--calendar` so every calendar is included.
+2. Relay every failure first.
+3. Flatten `instances` to `[start, end]`, skip nothing that is busy, and sort by start.
+4. Gaps inside the window that fit the meeting (30 or 60 minutes) are candidates. Prefer mid-morning through mid-afternoon unless the user asked for any time.
+5. Offer one to three options in plain language, with the event names you used.
+
+## Batch
+
+`anymoment events batch --json` reads JSONL on stdin. Each line is one of:
+
+```json
+{"op":"create","text":"Standup every weekday at 9am"}
+{"op":"update","id":"EVENT_ID","name":"New name"}
+{"op":"delete","id":"EVENT_ID"}
+{"op":"link","calendar_id":"CALENDAR","event_id":"EVENT_ID"}
+```
+
+## Other commands
+
+- Tokens: `anymoment tokens list`, `anymoment tokens clear`.
+- Config: `anymoment config show`, `config set-url`, `config set-timezone`, `config set-calendar`.
+- Calendars: `am ls`. Also `create`, `get`, `update`, `delete`, `share`, `update-share`, `unshare`, `webhook-url`, `batch-add-events`, `batch-remove-events`.
+- Events: `list`, `get`, `instances`, `next`, `export`.
+- Who am I: `anymoment users me --json`.
+- Shell completion: `anymoment completion bash` (also `zsh` or `fish`).
+
+Aliases: `am` is the binary, `a` is agenda, `ls` is calendars list, `rm` is events delete.
+
+## Scripts
+
+- `python scripts/anymoment_run.py -- today --json --fields events,failures` runs the CLI with UTF-8 and `ANYMOMENT_BIN`.
+- `scripts/anymoment_api.py` returns `.events`, `.failures`, `.sync_warnings`, `.user_message`, `.next_step`, and `.retry_after`.

@@ -1,11 +1,9 @@
-"""SKILL.md lint. Target gaps that the current skill still has are xfail(strict=True)."""
+"""SKILL.md lint."""
 
 from __future__ import annotations
 
 import subprocess
 import sys
-
-import pytest
 
 import lint_skill
 from conftest import ROOT
@@ -126,23 +124,23 @@ def test_dated_example_is_detected(tmp_path):
     assert all(item.severity == "warning" for item in dated)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="SKILL.md still contains hard-coded 2025 dates; the skill rewrite has not started",
-)
 def test_skill_has_no_dated_examples():
     findings = lint_skill.lint_path(SKILL)
     dated = [item for item in findings if item.code == "dated-example"]
     assert dated == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="SKILL.md is over the 4 KB budget; the cheat-sheet rewrite has not started",
-)
 def test_skill_is_within_4kb_budget():
     findings = lint_skill.lint_path(SKILL)
     assert not any(item.code == "size" for item in findings)
     assert SKILL.stat().st_size <= lint_skill.SOFT_BUDGET_BYTES
+
+
+def test_skill_warnings_are_only_the_directory_name():
+    findings = lint_skill.lint_path(SKILL)
+    assert [item.code for item in findings if item.severity == "warning"] == ["directory-name"]
+    assert not any(item.severity == "error" for item in findings)
+
+
+def test_cheat_sheet_stays_within_60_lines():
+    assert len(SKILL.read_text(encoding="utf-8").splitlines()) <= 60
