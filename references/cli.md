@@ -1,6 +1,6 @@
 # AnyMoment CLI 2.0 (agent reference)
 
-Requires `anymoment` / `am` from `pip install "anymoment[cli]>=2.0.0"`.
+Requires `anymoment` / `am` from `pip install "anymoment[cli]>=2.0.1"`.
 
 Auth for a job: export `ANYMOMENT_TOKEN`. That skips the login prompt. On a TTY, `anymoment auth login` stores a token under `~/.anymoment/`. Without a TTY, login needs `--email` and `--password`. `anymoment auth resend-verification` sends the verification email again. `anymoment auth logout` drops the saved token.
 
@@ -14,7 +14,7 @@ Put global flags after the subcommand.
 - `--jsonl` prints one object per line when the payload is a list.
 - `--fields events,failures` keeps `v` plus those top-level keys. It does not walk nested event fields.
 - `--yes` skips the delete confirmation. Ask the user first, then pass it.
-- `--dry-run` shows a create, update, or delete without sending it.
+- `--dry-run` previews a write without sending it. Preview a create with `am events create ... --dry-run`.
 - `--idempotency-key` remembers the first local result and replays it. The API does not take this key.
 - `--raw` dumps the full document. Prefer `--json --fields`.
 
@@ -58,7 +58,7 @@ ISO bounds, when a phrase is not enough: `anymoment agenda list --start START --
 
 ## Writes
 
-- Create: `am create "Team sync Tuesdays at 2pm" --calendar Work --dry-run`, then drop `--dry-run`.
+- Create: `am events create "Team sync Tuesdays at 2pm" --calendar Work --dry-run`, then drop `--dry-run`.
 - Update: `am update EVENT_ID --when "every Tuesday at 11am" --title "New name" --yes`.
 - Delete: `am rm EVENT_ID --yes`.
 - Toggle: `anymoment events toggle EVENT_ID --json`.

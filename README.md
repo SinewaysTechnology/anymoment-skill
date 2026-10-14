@@ -7,7 +7,7 @@ This folder is the **AnyMoment skill** for AI agents and humans: it teaches how 
 **Before using this skill**, install the AnyMoment CLI so the `anymoment` command is available:
 
 ```bash
-pip install "anymoment[cli]>=2.0.0"
+pip install "anymoment[cli]>=2.0.1"
 ```
 
 - Use the same Python environment that your agent (e.g. OpenClaw) uses.
@@ -46,7 +46,7 @@ pip install "anymoment[cli]>=2.0.0"
 
 2. **Install the CLI from PyPI** (on the machine where OpenClaw runs):
    ```bash
-   pip install "anymoment[cli]>=2.0.0"
+   pip install "anymoment[cli]>=2.0.1"
    anymoment --version
    ```
 
@@ -69,7 +69,7 @@ pip install "anymoment[cli]>=2.0.0"
 |------|--------|
 | What’s on today? | `am today --json --fields events,failures` |
 | What’s on this week? | `am week --json --fields events,failures` |
-| Create events from text | `am create "Your natural language here" --dry-run` |
+| Create events from text | `am events create "Your natural language here" --dry-run` |
 | Update an event | `am update EVENT_ID --title "title" --yes` |
 | Search events by name | `am agenda search "standup" --json` |
 | List calendars | `am ls --json --fields result` |
