@@ -54,8 +54,21 @@ DATED_EXAMPLE_PATTERNS = (
 )
 
 INLINE_CODE = re.compile(r"`([^`\n]+)`")
-COMMAND_START = re.compile(r"^(?:sudo\s+)?(?:anymoment|pip3?|python3?|py)(?:\s|$)")
-BARE_TOOL = re.compile(r"^(?:sudo\s+)?(?:anymoment|pip3?|python3?|py)$")
+COMMAND_START = re.compile(r"^(?:sudo\s+)?(?:anymoment|am|pip3?|python3?|py)(?:\s|$)")
+BARE_TOOL = re.compile(r"^(?:sudo\s+)?(?:anymoment|am|pip3?|python3?|py)$")
+GLOBAL_FLAGS = frozenset(
+    {
+        "--json",
+        "--jsonl",
+        "--fields",
+        "--yes",
+        "-y",
+        "--dry-run",
+        "--idempotency-key",
+        "--profile",
+    }
+)
+GLOBAL_VALUES = frozenset({"--fields", "--idempotency-key", "--profile"})
 FENCE_LANGS = {"", "bash", "sh", "shell", "console"}
 
 SCAN_SUFFIXES = {".md", ".py", ".yml", ".yaml", ".ps1", ".toml", ".txt", ".json"}
@@ -150,20 +163,33 @@ _SEARCH_FLAGS = _AGENDA_FLAGS + [
 ]
 _SEARCH_VALUES = _AGENDA_VALUES + ["--limit", "-l", "--offset"]
 
-# Subcommands the current skill is allowed to teach. This is the installed CLI,
-# not a future command set.
+# Subcommands of anymoment 2.0. Global agent flags are added in _check_args.
+_WINDOW_FLAGS = ["--calendar", "-c", "--host", "-h", "--raw", "--pipe"]
+_WINDOW_VALUES = ["--calendar", "-c", "--host", "-h"]
 ANYMOMENT_COMMANDS: dict = {
     "--version": _leaf([], 0, []),
     "auth": {
-        "login": _host_leaf(),
+        "login": _leaf(
+            ["--host", "-h", "--email", "--password"],
+            0,
+            ["--host", "-h", "--email", "--password"],
+        ),
+        "resend-verification": _host_leaf(),
         "logout": _host_leaf(),
     },
     "create": _leaf(_CREATE_FLAGS, 1, _CREATE_VALUES),
     "update": _leaf(_UPDATE_FLAGS, 1, _UPDATE_VALUES),
     "agenda": {
+        "show": _leaf(_WINDOW_FLAGS, 1, _WINDOW_VALUES),
         "list": _leaf(_AGENDA_FLAGS, 0, _AGENDA_VALUES),
         "search": _leaf(_SEARCH_FLAGS, 1, _SEARCH_VALUES),
     },
+    "today": _leaf(_WINDOW_FLAGS, 0, _WINDOW_VALUES),
+    "week": _leaf(_WINDOW_FLAGS, 0, _WINDOW_VALUES),
+    "next": _leaf(_WINDOW_FLAGS, 0, _WINDOW_VALUES),
+    "schema": _leaf([], 0, []),
+    "help": _leaf([], 1, []),
+    "completion": _leaf([], 1, []),
     "calendars": {
         "list": _leaf(
             ["--active", "--inactive", "--limit", "-l", "--offset", "--raw", "--pipe"],
@@ -193,6 +219,20 @@ ANYMOMENT_COMMANDS: dict = {
         "delete": _leaf([], 1, []),
         "share": _leaf(["--role", "--raw"], 2, ["--role"]),
         "webhook-url": _leaf(["--raw"], 1, []),
+        "add-event": _leaf(
+            ["--display-order", "--color", "--host", "-h", "--raw"],
+            2,
+            ["--display-order", "--color", "--host", "-h"],
+        ),
+        "remove-event": _leaf(["--host", "-h"], 2, ["--host", "-h"]),
+        "batch-add-events": _leaf(
+            ["--display-order", "--color", "--host", "-h", "--raw"],
+            12,
+            ["--display-order", "--color", "--host", "-h"],
+        ),
+        "batch-remove-events": _leaf(["--host", "-h"], 12, ["--host", "-h"]),
+        "update-share": _leaf(["--role", "--host", "-h", "--raw"], 2, ["--role", "--host", "-h"]),
+        "unshare": _leaf(["--host", "-h", "--raw"], 2, ["--host", "-h"]),
     },
     "users": {
         "me": _leaf(["--raw"], 0, []),
@@ -236,6 +276,7 @@ ANYMOMENT_COMMANDS: dict = {
             1,
             ["--format", "--from", "--to", "--out"],
         ),
+        "batch": _leaf(["--host", "-h"], 0, ["--host", "-h"]),
     },
 }
 
@@ -602,7 +643,20 @@ def _resolve_anymoment(argv: list[str]) -> CommandSpec:
                 rest,
                 allow_any_positionals=True,
             )
+        if node is ANYMOMENT_COMMANDS and token == "ls":
+            node = node["calendars"]["list"]
+            rest = rest[1:]
+            break
+        if node is ANYMOMENT_COMMANDS and token == "rm":
+            node = node["events"]["delete"]
+            rest = rest[1:]
+            break
+        if node is ANYMOMENT_COMMANDS and token == "a":
+            token = "agenda"
         child = node.get(token)
+        if child is None and isinstance(node.get("show"), CommandSpec):
+            node = node["show"]
+            break
         if child is None:
             raise ParseError(f"unknown subcommand {token!r}")
         node = child
@@ -616,7 +670,16 @@ def _resolve_anymoment(argv: list[str]) -> CommandSpec:
     return _check_args(node, rest, allow_any_positionals=False)
 
 
+def _with_globals(spec: CommandSpec) -> CommandSpec:
+    return CommandSpec(
+        spec.flags | GLOBAL_FLAGS,
+        spec.positionals,
+        spec.value_flags | GLOBAL_VALUES,
+    )
+
+
 def _check_args(spec: CommandSpec, rest: list[str], *, allow_any_positionals: bool) -> CommandSpec:
+    spec = _with_globals(spec)
     positionals = 0
     index = 0
     while index < len(rest):
@@ -640,6 +703,7 @@ def _check_args(spec: CommandSpec, rest: list[str], *, allow_any_positionals: bo
 
 
 def _validate_group(body: str, spec: CommandSpec) -> None:
+    spec = _with_globals(spec)
     cleaned = _strip_parentheticals(body).strip()
     if not cleaned or cleaned == "...":
         return
@@ -691,6 +755,8 @@ def parse_command(command: str) -> None:
         argv = argv[1:]
     if not argv:
         raise ParseError("empty command")
+    if argv[0] == "am":
+        argv[0] = "anymoment"
     if argv[0] != "anymoment":
         return
     spec = _resolve_anymoment(argv)

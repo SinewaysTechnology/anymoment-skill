@@ -1,9 +1,6 @@
-# Smoke tests (manual)
+# Smoke checks (manual). Set ANYMOMENT_TOKEN, or log in on a TTY first.
 
-anymoment --version
-anymoment users me --raw
-anymoment calendars list --raw
-# Create (uses extract endpoint; requires default calendar or --calendar)
-anymoment create "Standup every Monday at 9am" --raw
-# Update (replace EVENT_ID with an event id from agenda list or events list)
-# anymoment update EVENT_ID --title "New title" --raw
+anymoment schema
+am today --json --fields events,failures
+am ls --json --fields result
+# am create "Standup every Monday at 9am" --dry-run

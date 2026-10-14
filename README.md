@@ -7,20 +7,20 @@ This folder is the **AnyMoment skill** for AI agents and humans: it teaches how 
 **Before using this skill**, install the AnyMoment CLI so the `anymoment` command is available:
 
 ```bash
-pip install anymoment[cli]
+pip install "anymoment[cli]>=2.0.0"
 ```
 
 - Use the same Python environment that your agent (e.g. OpenClaw) uses.
 - **Verify:** run `anymoment --version`. If the command is not found, add the Python `Scripts` (Windows) or `bin` (Unix) directory to `PATH`, or set `ANYMOMENT_BIN` to the full path of the `anymoment` executable.
-- **Then:** run `anymoment auth login` once. Tokens are stored under `~/.anymoment/`.
+- **Then:** export `ANYMOMENT_TOKEN` for non-interactive use, or run `anymoment auth login` once on a TTY. Tokens are stored under `~/.anymoment/`.
 
 ## What’s in this folder
 
 | Path | Purpose |
 |------|--------|
-| **`SKILL.md`** | Main skill doc for agents: use cases, examples, scheduling, time/recurrence rules, install instructions. |
-| **`references/cli.md`** | CLI command reference. |
-| **`scripts/`** | Helpers: `date_ranges.py` (ISO date ranges), `anymoment_run.py` (UTF-8 + ANYMOMENT_BIN shim), `anymoment_api.py` (run helpers), `examples_smoke.ps1` (smoke commands). |
+| **`SKILL.md`** | Short cheat sheet for agents. JSON-first, relative dates, exit codes, and what to tell the user. |
+| **`references/cli.md`** | Command map, batch input, free-time steps, and write examples. |
+| **`scripts/`** | Helpers: `anymoment_api.py` (JSON results with events, failures, and error fields), `anymoment_run.py` (UTF-8 + ANYMOMENT_BIN shim), `date_ranges.py` (ISO bounds when a phrase is not enough), `examples_smoke.ps1` (smoke commands). |
 
 ## Install and use with OpenClaw
 
@@ -46,11 +46,11 @@ pip install anymoment[cli]
 
 2. **Install the CLI from PyPI** (on the machine where OpenClaw runs):
    ```bash
-   pip install anymoment[cli]
+   pip install "anymoment[cli]>=2.0.0"
    anymoment --version
    ```
 
-3. **Log in once** (same user/environment as OpenClaw):
+3. **Authenticate** (same user/environment as OpenClaw). Export `ANYMOMENT_TOKEN`, or on a TTY:
    ```bash
    anymoment auth login
    ```
@@ -67,10 +67,11 @@ pip install anymoment[cli]
 
 | Goal | Command |
 |------|--------|
-| Create events from text | `anymoment create "Your natural language here" [--calendar "name or ID"]` |
-| Update an event | `anymoment update <event_id> [--when "recurrence"] [--title "title"] [--description "desc"]` |
-| What’s on this week? | `anymoment agenda list --start <Mon 00:00 ISO> --end <Sun 23:59 ISO>` |
-| Search events by name | `anymoment agenda search "standup"` |
-| List calendars | `anymoment calendars list` |
+| What’s on today? | `am today --json --fields events,failures` |
+| What’s on this week? | `am week --json --fields events,failures` |
+| Create events from text | `am create "Your natural language here" --dry-run` |
+| Update an event | `am update EVENT_ID --title "title" --yes` |
+| Search events by name | `am agenda search "standup" --json` |
+| List calendars | `am ls --json --fields result` |
 
-Full use-case examples and the full command reference are in **`SKILL.md`** and **`references/cli.md`** in this folder.
+The cheat sheet is **`SKILL.md`**. The command map and longer examples are in **`references/cli.md`**.
