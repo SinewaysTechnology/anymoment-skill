@@ -1,7 +1,8 @@
-"""Drive the anymoment CLI and read its 2.0 JSON.
+"""Drive the anymoment CLI and read its JSON.
 
-Expects `anymoment` on PATH, or `ANYMOMENT_BIN`. `ANYMOMENT_TOKEN` is passed
-through for non-interactive auth. Machine output is `--json`. Agenda stdout
+Expects `anymoment` on PATH, or `ANYMOMENT_BIN`. `ANYMOMENT_API_KEY` and
+`ANYMOMENT_TOKEN` are passed through. A set API key is used instead of the
+token. Do not print either value. Machine output is `--json`. Agenda stdout
 is `{events, failures}` (a `v` envelope is fine). Failures stay on the result.
 A non-zero exit reads `user_message`, `next_step`, and `retry_after` from
 stderr `{"error": {...}}` or from a JSON error body on stdout.
