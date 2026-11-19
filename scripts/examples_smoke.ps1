@@ -6,3 +6,4 @@ am auth status
 am today --json --fields events,failures
 am ls --json --fields result
 # am events create "Standup every Monday at 9am" --dry-run
+# Business-day rules are POST /events JSON, not --rrule. See references/cli.md.

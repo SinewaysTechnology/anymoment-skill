@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0
+
+Requires `anymoment[cli]>=2.2.0`.
+
+- `am auth status` checks the credential with the server and reports `valid`, `expired`, `invalid`, or `unknown`. A key is sent as `Authorization: Bearer`.
+- Business-day rules are `POST /events` fields: `last_business_day`, `nth_business_day` (`n`, `from_end`), `roll`, and `business_calendar` (country, subdivision, weekend days, closures, extra workdays). `am events add --rrule` cannot express them.
+- Webhook type `occurrence.due`, the signed payload, and what to say for HTTP 401, an unexpected 402, and HTTP 403. Outgoing webhooks need Pro or an active trial. `paused_reason` `subscription_required` means deliveries will not send.
+- `am events add` and `am events import` are documented. Agenda JSON includes `summary`.
+
 ## 2.1.0
 
 Requires `anymoment[cli]>=2.1.0`.

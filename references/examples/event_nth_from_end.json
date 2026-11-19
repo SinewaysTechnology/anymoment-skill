@@ -1,0 +1,19 @@
+{
+  "name": "Three days before month end",
+  "components": [
+    {
+      "operator": "OR",
+      "event_config": {
+        "recurrence": 2,
+        "start_time": "09:00",
+        "timezone": "Europe/Madrid",
+        "config": {
+          "interval": 1,
+          "type": "nth_business_day",
+          "n": 3,
+          "from_end": true
+        }
+      }
+    }
+  ]
+}
