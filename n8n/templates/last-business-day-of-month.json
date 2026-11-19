@@ -1,0 +1,444 @@
+{
+  "name": "Run a workflow on the last business day of the month, skipping public holidays",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Run a workflow on the last business day of the month, skipping public holidays\n\nAnyMoment calls this workflow on the last business day of the month, after weekends and public holidays are removed.\n\n### How it works\n\nCreate a monthly rule with type last_business_day, a country for holidays, a subdivision, a weekend, and a roll. Link the rule to a calendar and subscribe that calendar to occurrence.due, using the URL of the Webhook node here. AnyMoment then POSTs a version 1 JSON body with three headers: X-AnyMoment-Signature, X-AnyMoment-Timestamp, and X-AnyMoment-Delivery. The signature is HMAC-SHA256 of the timestamp, a dot, and the raw body. A Code node keeps those raw bytes and builds that string. The Crypto node signs it with the secret stored in a credential. The next Code node compares the digest, returns HTTP 401 on a mismatch, and runs the month-end job on a match.\n\n### Setup\n\n1. Open https://anymoment.sineways.tech/?ref=n8n-tpl-last-bizday and create an account. There is a free 30-day trial. Webhooks need Pro after the trial.\n2. Create a calendar and an API key with events:read, events:write, and webhooks:manage. The templates README has the curl commands.\n3. Import this workflow, copy the Webhook production URL, and create the subscription for that URL.\n4. Create a Crypto credential and paste the subscription secret into HMAC Secret. Select that credential on the HMAC node. This file does not contain the secret.\n5. Publish the workflow.\n\n### Customization\n\nEdit country, time zone, and the example job URL in Config. Replace Month-end job with Slack, Google Sheets, or an HTTP Request. The fallback note shows a last-weekday Code schedule and the holidays it still fires on.\n",
+        "height": 780,
+        "width": 580,
+        "color": 1
+      },
+      "id": "note-overview",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Trigger\n\nAnyMoment calls this URL with occurrence.due. Leave the raw body option on. The signature uses those exact bytes.\n",
+        "height": 190,
+        "width": 280,
+        "color": 7
+      },
+      "id": "note-trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        620,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Config\n\nCountry, time zone, calendar, and the example job URL. The signing secret is not stored here.\n",
+        "height": 180,
+        "width": 280,
+        "color": 7
+      },
+      "id": "note-config",
+      "name": "Config note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Verify\n\nThe Code node builds timestamp, a dot, and the raw body. Crypto computes the HMAC. A mismatch does not run the job.\n",
+        "height": 200,
+        "width": 360,
+        "color": 7
+      },
+      "id": "note-verify",
+      "name": "Verify note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Month-end job\n\nReplace this node with the month-end work, such as Slack or Sheets. It runs only after the signature matches.\n",
+        "height": 190,
+        "width": 320,
+        "color": 7
+      },
+      "id": "note-job",
+      "name": "Job note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Reject\n\nHTTP 401 tells AnyMoment the delivery is rejected. The Stop node marks the execution failed so you can see it.\n",
+        "height": 180,
+        "width": 340,
+        "color": 7
+      },
+      "id": "note-error",
+      "name": "Error note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Free fallback\n\nA Code node can test Quartz LW, the last weekday of the month. That misses holidays. It still fires on Memorial Day (Mon 31 May 2027) and on New Year's Day observed (Fri 31 Dec 2027). AnyMoment skips both.\n",
+        "height": 240,
+        "width": 580,
+        "color": 2
+      },
+      "id": "note-fallback",
+      "name": "Free fallback",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Secret stays in the credential\n\nPut the subscription secret in a Crypto credential, on HMAC Secret. Do not paste it into this workflow and do not commit it.\n",
+        "height": 220,
+        "width": 380,
+        "color": 3
+      },
+      "id": "note-warning",
+      "name": "Secret warning",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "last-business-day",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "webhook-last-bizday",
+      "name": "AnyMoment webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        660,
+        280
+      ],
+      "webhookId": "last-business-day"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": true,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field-country",
+              "name": "country",
+              "value": "US",
+              "type": "string"
+            },
+            {
+              "id": "field-timezone",
+              "name": "timezone",
+              "value": "Europe/Madrid",
+              "type": "string"
+            },
+            {
+              "id": "field-calendar",
+              "name": "calendarId",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "field-job",
+              "name": "jobUrl",
+              "value": "https://example.com/month-end",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-fields",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const item = $input.first();\nconst headers = item.json.headers || {};\n\nfunction header(name) {\n  const wanted = name.toLowerCase();\n  for (const key of Object.keys(headers)) {\n    if (key.toLowerCase() === wanted) {\n      const value = headers[key];\n      return Array.isArray(value) ? String(value[0] || '') : String(value || '');\n    }\n  }\n  return '';\n}\n\nfunction rawFrom(binary) {\n  if (!binary) return '';\n  const entry = binary.data || binary.body;\n  if (entry && entry.data) return Buffer.from(entry.data, 'base64').toString('utf8');\n  return '';\n}\n\nlet body = rawFrom(item.binary);\nif (!body) {\n  try {\n    body = rawFrom($('AnyMoment webhook').first().binary);\n  } catch (error) {\n    body = '';\n  }\n}\n\nconst timestamp = header('x-anymoment-timestamp');\nconst signature = header('x-anymoment-signature').trim().toLowerCase();\nconst delivery = header('x-anymoment-delivery');\nlet prepareError = '';\nif (!body) prepareError = 'Raw body is missing. Turn on the Webhook raw body option.';\nelse if (!timestamp || !signature) prepareError = 'Signature headers are missing.';\nelse if (!Number.isFinite(Number(timestamp))) prepareError = 'Timestamp is not a number.';\nelse if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) prepareError = 'Timestamp is outside the 300 second window.';\nelse if (!/^[0-9a-f]+$/.test(signature)) prepareError = 'Signature is not hex.';\n\nlet payload = null;\nif (body && !prepareError) {\n  try {\n    payload = JSON.parse(body);\n  } catch (error) {\n    prepareError = 'Body is not JSON.';\n  }\n}\n\nreturn [{\n  json: {\n    signedPayload: timestamp && body ? timestamp + '.' + body : '',\n    signature,\n    delivery,\n    prepareError,\n    payload,\n    changeType: (payload && payload.change_type) || '',\n    occurrenceTime: (payload && payload.occurrence_time) || null,\n    event: (payload && payload.event) || null,\n  },\n}];"
+      },
+      "id": "prepare-body",
+      "name": "Build signed string",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "action": "hmac",
+        "binaryData": false,
+        "value": "={{ $json.signedPayload }}",
+        "type": "SHA256",
+        "encoding": "hex",
+        "dataPropertyName": "expectedSignature"
+      },
+      "id": "hmac-node",
+      "name": "HMAC",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        280
+      ],
+      "credentials": {
+        "crypto": {
+          "name": "AnyMoment webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const item = $input.first().json;\n\nfunction fail(reason) {\n  return [{\n    json: {\n      valid: false,\n      reason,\n      delivery: item.delivery || '',\n      payload: item.payload || null,\n      changeType: item.changeType || '',\n      occurrenceTime: item.occurrenceTime || null,\n      event: item.event || null,\n    },\n  }];\n}\n\nif (item.prepareError) return fail(item.prepareError);\nconst left = String(item.expectedSignature || '').toLowerCase();\nconst right = String(item.signature || '').toLowerCase();\nif (!left || left.length !== right.length) return fail('Signature does not match the raw body.');\nlet diff = 0;\nfor (let i = 0; i < left.length; i++) diff |= left.charCodeAt(i) ^ right.charCodeAt(i);\nif (diff !== 0) return fail('Signature does not match the raw body.');\n\nreturn [{\n  json: {\n    valid: true,\n    reason: 'ok',\n    delivery: item.delivery,\n    payload: item.payload,\n    changeType: item.changeType,\n    occurrenceTime: item.occurrenceTime,\n    event: item.event,\n  },\n}];"
+      },
+      "id": "compare-sig",
+      "name": "Compare signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-valid",
+      "name": "Signature valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2060,
+        280
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "month-end-job",
+      "name": "Month-end job",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, changeType: $json.changeType, occurrenceTime: $json.occurrenceTime }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-ok",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: $json.reason }) }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-bad",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2320,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.reason || 'AnyMoment signature check failed' }}"
+      },
+      "id": "stop-bad",
+      "name": "Reject bad signature",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        440
+      ]
+    }
+  ],
+  "connections": {
+    "AnyMoment webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Build signed string",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build signed string": {
+      "main": [
+        [
+          {
+            "node": "HMAC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC": {
+      "main": [
+        [
+          {
+            "node": "Compare signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare signature": {
+      "main": [
+        [
+          {
+            "node": "Signature valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signature valid?": {
+      "main": [
+        [
+          {
+            "node": "Month-end job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Month-end job": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond 401": {
+      "main": [
+        [
+          {
+            "node": "Reject bad signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

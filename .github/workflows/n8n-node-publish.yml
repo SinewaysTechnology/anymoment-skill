@@ -1,0 +1,39 @@
+name: Publish n8n community node
+
+# Publishes n8n/nodes only. Nothing in this repository runs this workflow
+# unless someone starts it by hand or pushes a tag n8n-nodes-anymoment-v*.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'n8n-nodes-anymoment-v*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: n8n/nodes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: n8n/nodes/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Publish with provenance
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          fi
+          npm publish --provenance --access public
