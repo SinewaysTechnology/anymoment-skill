@@ -190,7 +190,7 @@ def test_skill_documents_api_key_setup():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     for text in (skill, reference, readme):
-        assert 'anymoment[cli]>=2.1.0' in text
+        assert 'anymoment[cli]>=2.2.0' in text
         assert "ANYMOMENT_API_KEY" in text
         assert "--api-key" in text
         assert "am auth status" in text
@@ -198,6 +198,10 @@ def test_skill_documents_api_key_setup():
     assert "Do not print the key or write it to logs." in skill
     assert "Do not print or log the signing secret." in skill
     assert "verify_webhook" in skill
+    assert 'version: "2.2.0"' in skill
+    assert "occurrence.due" in skill
+    assert "business" in skill
+    assert "Authorization: Bearer" in skill
     assert "API keys" in skill
     assert "events:read" in skill
     assert "events:write" in skill
@@ -233,10 +237,19 @@ def test_skill_documents_api_key_setup():
         "am calendars subscriptions replay CALENDAR SUBSCRIPTION DELIVERY",
         "Do not print the key, repeat it, or write it to logs.",
         "Do not print it again or write it to logs.",
+        "last_business_day",
+        "nth_business_day",
+        "business_calendar",
+        "occurrence.due",
+        "paused_reason",
+        "subscription_required",
+        "Authorization: Bearer",
     ):
         assert phrase in reference
-    assert "## 2.1.0" in changelog
-    assert "anymoment[cli]>=2.1.0" in changelog
+    assert "## 2.2.0" in changelog
+    assert "anymoment[cli]>=2.2.0" in changelog
+    assert "occurrence.due" in changelog
+    assert "business_calendar" in changelog
     assert "invalid_api_key" in changelog
     assert "verify_webhook" in changelog
     assert ">=2.0.1" not in skill

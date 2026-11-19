@@ -1,0 +1,58 @@
+{
+  "examples": [
+    {
+      "file": "event_last_business_day.json",
+      "method": "post",
+      "path": "/events",
+      "schema": "AdvancedRecurrentEventCreate"
+    },
+    {
+      "file": "event_first_business_day.json",
+      "method": "post",
+      "path": "/events",
+      "schema": "AdvancedRecurrentEventCreate"
+    },
+    {
+      "file": "event_nth_from_end.json",
+      "method": "post",
+      "path": "/events",
+      "schema": "AdvancedRecurrentEventCreate"
+    },
+    {
+      "file": "event_roll_custom_weekend.json",
+      "method": "post",
+      "path": "/events",
+      "schema": "AdvancedRecurrentEventCreate"
+    },
+    {
+      "file": "subscription_create.json",
+      "method": "post",
+      "path": "/calendars/{calendar_id}/subscriptions",
+      "schema": "SubscriptionCreate"
+    },
+    {
+      "file": "subscription_update.json",
+      "method": "patch",
+      "path": "/calendars/{calendar_id}/subscriptions/{subscription_id}",
+      "schema": "SubscriptionUpdate"
+    },
+    {
+      "file": "calendar_link.json",
+      "method": "post",
+      "path": "/calendars/{calendar_id}/events/{event_id}",
+      "schema": "CalendarEventLinkCreate"
+    }
+  ],
+  "rejects": [
+    {
+      "name": "flat recurrence body",
+      "schema": "AdvancedRecurrentEventCreate",
+      "body": {
+        "recurrence": 2,
+        "start_time": "09:00",
+        "timezone": "Europe/Madrid",
+        "config": {"interval": 1, "type": "last_business_day"}
+      }
+    }
+  ]
+}

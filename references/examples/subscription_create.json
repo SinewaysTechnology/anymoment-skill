@@ -1,0 +1,5 @@
+{
+  "url": "https://example.com/hooks/anymoment",
+  "event_types": ["occurrence.due", "event.created"],
+  "occurrence_offset_seconds": -3600
+}

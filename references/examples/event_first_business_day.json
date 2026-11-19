@@ -1,0 +1,15 @@
+{
+  "name": "Month-open",
+  "components": [
+    {
+      "operator": "OR",
+      "event_config": {
+        "recurrence": 2,
+        "start_time": "09:00",
+        "timezone": "Europe/London",
+        "config": {"interval": 1, "type": "nth_business_day", "n": 1}
+      }
+    }
+  ],
+  "business_calendar": {"country": "GB", "subdiv": "ENG"}
+}

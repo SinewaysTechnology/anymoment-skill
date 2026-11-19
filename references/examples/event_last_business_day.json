@@ -1,0 +1,15 @@
+{
+  "name": "Month-end close",
+  "components": [
+    {
+      "operator": "OR",
+      "event_config": {
+        "recurrence": 2,
+        "start_time": "09:00",
+        "timezone": "Europe/Madrid",
+        "config": {"interval": 1, "type": "last_business_day"}
+      }
+    }
+  ],
+  "business_calendar": {"country": "US"}
+}
