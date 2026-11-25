@@ -20,9 +20,13 @@ npm pack
 docker cp n8n-nodes-anymoment-0.1.0.tgz n8n:/tmp/n8n-nodes-anymoment-0.1.0.tgz
 docker exec -u node n8n mkdir -p /home/node/.n8n/nodes
 docker cp n8n-nodes-anymoment-0.1.0.tgz n8n:/home/node/.n8n/nodes/n8n-nodes-anymoment-0.1.0.tgz
-docker exec -u node -w /home/node/.n8n/nodes n8n npm install ./n8n-nodes-anymoment-0.1.0.tgz
+docker exec -u node -w /home/node/.n8n/nodes n8n npm install --omit=peer ./n8n-nodes-anymoment-0.1.0.tgz
 docker restart n8n
 ```
+
+Plain `npm install` of the tarball fails in the official image because of the `isolated-vm` peer dependency. `--omit=peer` skips that peer.
+
+Real deliveries need a public HTTPS `WEBHOOK_URL`. AnyMoment calls that URL from the internet and rejects a webhook that is not HTTPS.
 
 After the restart, search the node panel for **AnyMoment** and **AnyMoment Trigger**. Create a credential of type **AnyMoment API**.
 
@@ -64,7 +68,7 @@ curl -sS -D - -o /dev/null "$API/calendars?limit=1"
 
 The last call should be 422 with a missing `x-auth-token` header. Do not print the body of `/subscription/tiers` into tickets or docs. It includes prices.
 
-3. Trigger. Create a workflow with **AnyMoment Trigger**, calendar selected, schedule **Last Business Day**, country `US`, time zone set. Activate it. Then:
+3. Trigger. Create a workflow with **AnyMoment Trigger**, calendar selected, schedule **Last Business Day**, country `US`, time zone set. The production webhook has to be the public HTTPS `WEBHOOK_URL` from above. Activate it. Then:
 
 ```bash
 curl -sS "$API/calendars/$CALENDAR_ID/subscriptions" -H "Authorization: Bearer $KEY"

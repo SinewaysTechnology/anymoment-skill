@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-anymoment.anyMoment",
+	"node": "n8n-nodes-anymoment.anyMomentActions",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Productivity"],

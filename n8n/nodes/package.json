@@ -20,6 +20,7 @@
 		"dev": "n8n-node dev",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
+		"test": "node --test test/*.test.mjs",
 		"release": "n8n-node release",
 		"prepublishOnly": "n8n-node prerelease"
 	},
@@ -29,7 +30,7 @@
 		"strict": true,
 		"credentials": ["dist/credentials/AnyMomentApi.credentials.js"],
 		"nodes": [
-			"dist/nodes/AnyMoment/AnyMoment.node.js",
+			"dist/nodes/AnyMomentActions/AnyMomentActions.node.js",
 			"dist/nodes/AnyMomentTrigger/AnyMomentTrigger.node.js"
 		]
 	},

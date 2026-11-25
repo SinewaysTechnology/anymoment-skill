@@ -237,10 +237,12 @@ async function runSubscription(
 	});
 }
 
-export class AnyMoment implements INodeType {
+export class AnyMomentActions implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'AnyMoment',
-		name: 'anyMoment',
+		// Distinct from anyMomentTrigger. The node picker copies the trigger
+		// description onto a node whose name is that trigger name without "Trigger".
+		name: 'anyMomentActions',
 		icon: { light: 'file:anymoment.svg', dark: 'file:anymoment.dark.svg' },
 		group: ['transform'],
 		version: 1,

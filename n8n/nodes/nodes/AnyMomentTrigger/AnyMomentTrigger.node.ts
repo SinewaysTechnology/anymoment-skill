@@ -11,7 +11,14 @@ import {
 	type JsonObject,
 } from 'n8n-workflow';
 
-import { anyMomentApiRequest, asArray, headerValue, locatorValue } from '../shared/api';
+import {
+	anyMomentApiRequest,
+	asArray,
+	errorText,
+	headerValue,
+	isHttpStatus,
+	locatorValue,
+} from '../shared/api';
 import { businessDayFields, calendarLocator, eventLocator } from '../shared/fields';
 import { buildRuleBody, readBusinessDayInput } from '../shared/rule';
 import { verifyAnyMomentSignature } from '../shared/signature';
@@ -41,7 +48,10 @@ function rawBodyOf(request: {
 	return '';
 }
 
-async function ensureRule(context: IHookFunctions, calendarId: string): Promise<string> {
+async function ensureRule(
+	context: IHookFunctions,
+	calendarId: string,
+): Promise<{ eventId: string; created: boolean }> {
 	const data = staticData(context);
 	const ruleMode = context.getNodeParameter('ruleMode') as string;
 	if (ruleMode === 'existing') {
@@ -51,48 +61,55 @@ async function ensureRule(context: IHookFunctions, calendarId: string): Promise<
 		}
 		data.createdEvent = false;
 		data.eventId = eventId;
-		return eventId;
+		return { eventId, created: false };
 	}
 
 	let body: IDataObject;
 	try {
-		body = buildRuleBody(readBusinessDayInput((name, fallback) => context.getNodeParameter(name, fallback)));
+		body = buildRuleBody(
+			readBusinessDayInput((name, fallback) => context.getNodeParameter(name, fallback)),
+		);
 	} catch (error) {
 		throw new NodeOperationError(context.getNode(), error as Error);
 	}
 
 	let eventId = data.createdEvent ? data.eventId : undefined;
+	let created = false;
 	if (eventId) {
 		try {
 			await anyMomentApiRequest(context, 'GET', `/events/${eventId}`);
 			await anyMomentApiRequest(context, 'PUT', `/events/${eventId}`, body);
 		} catch (error) {
-			const message = error instanceof Error ? error.message : '';
-			if (!/404|not found/i.test(message)) {
+			if (!isHttpStatus(error, 404)) {
 				throw new NodeApiError(context.getNode(), error as JsonObject);
 			}
 			eventId = undefined;
 		}
 	}
 	if (!eventId) {
-		const created = (await anyMomentApiRequest(context, 'POST', '/events', body)) as IDataObject;
-		eventId = String(created.id || '');
+		const createdEvent = (await anyMomentApiRequest(
+			context,
+			'POST',
+			'/events',
+			body,
+		)) as IDataObject;
+		eventId = String(createdEvent.id || '');
 		if (!eventId) {
 			throw new NodeOperationError(context.getNode(), 'AnyMoment did not return an event id.');
 		}
 		data.createdEvent = true;
+		created = true;
 	}
 	data.eventId = eventId;
 
 	try {
 		await anyMomentApiRequest(context, 'POST', `/calendars/${calendarId}/events/${eventId}`, {});
 	} catch (error) {
-		const message = error instanceof Error ? error.message : '';
-		if (!/already|exists|duplicate|conflict|409/i.test(message)) {
+		if (!isHttpStatus(error, 409)) {
 			throw new NodeApiError(context.getNode(), error as JsonObject);
 		}
 	}
-	return eventId;
+	return { eventId, created };
 }
 
 export class AnyMomentTrigger implements INodeType {
@@ -213,7 +230,7 @@ export class AnyMomentTrigger implements INodeType {
 				if (!webhookUrl) {
 					throw new NodeOperationError(this.getNode(), 'n8n did not provide a webhook URL.');
 				}
-				const eventId = await ensureRule(this, calendarId);
+				const prepared = await ensureRule(this, calendarId);
 				const credentials = await this.getCredentials('anyMomentApi');
 				const suppliedSecret = String(credentials.webhookSecret || '').trim();
 				const offset = Number(this.getNodeParameter('occurrenceOffsetSeconds', 0));
@@ -223,20 +240,40 @@ export class AnyMomentTrigger implements INodeType {
 					occurrence_offset_seconds: Number.isFinite(offset) ? offset : 0,
 				};
 				if (suppliedSecret) payload.secret = suppliedSecret;
-				const created = (await anyMomentApiRequest(
-					this,
-					'POST',
-					`/calendars/${calendarId}/subscriptions`,
-					payload,
-				)) as IDataObject;
+				let created: IDataObject;
+				try {
+					created = (await anyMomentApiRequest(
+						this,
+						'POST',
+						`/calendars/${calendarId}/subscriptions`,
+						payload,
+					)) as IDataObject;
+				} catch (error) {
+					if (prepared.created) {
+						try {
+							await anyMomentApiRequest(this, 'DELETE', `/events/${prepared.eventId}`);
+							const orphaned = staticData(this);
+							orphaned.createdEvent = false;
+							delete orphaned.eventId;
+						} catch (cleanupError) {
+							throw new NodeApiError(this.getNode(), cleanupError as JsonObject, {
+								message: `${errorText(error)} The new rule was left in place because deleting it failed.`,
+							});
+						}
+					}
+					throw new NodeApiError(this.getNode(), error as JsonObject);
+				}
 				const data = staticData(this);
 				data.subscriptionId = String(created.id || '');
-				data.eventId = eventId;
+				data.eventId = prepared.eventId;
 				data.calendarId = calendarId;
 				data.webhookUrl = webhookUrl;
 				data.secret = suppliedSecret || String(created.secret || '');
 				if (!data.subscriptionId) {
-					throw new NodeOperationError(this.getNode(), 'AnyMoment did not return a subscription id.');
+					throw new NodeOperationError(
+						this.getNode(),
+						'AnyMoment did not return a subscription id.',
+					);
 				}
 				return true;
 			},
@@ -252,8 +289,7 @@ export class AnyMomentTrigger implements INodeType {
 							`/calendars/${calendarId}/subscriptions/${subscriptionId}`,
 						);
 					} catch (error) {
-						const message = error instanceof Error ? error.message : '';
-						if (!/404|not found/i.test(message)) {
+						if (!isHttpStatus(error, 404)) {
 							throw new NodeApiError(this.getNode(), error as JsonObject);
 						}
 					}

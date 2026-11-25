@@ -24,7 +24,7 @@ API keys cannot create calendars. Create the calendar in AnyMoment first, then s
 
 Fires when AnyMoment delivers `occurrence.due`.
 
-On activate, `webhookMethods` checks for an existing subscription on the same URL. If none exists it creates one. On deactivate it deletes that subscription. The rule itself stays, so the next activate updates it instead of leaving a duplicate.
+On activate, `webhookMethods` checks for an existing subscription on the same URL. If none exists it creates one. On deactivate it deletes that subscription. The rule itself stays, so the next activate updates it instead of leaving a duplicate. If that rule was deleted in AnyMoment, the next activate creates it again. A 409 from linking a rule that is already on the calendar is treated as success. If creating the subscription fails after this activation created the rule, that new rule is deleted.
 
 **Create From Fields** posts a monthly rule:
 
