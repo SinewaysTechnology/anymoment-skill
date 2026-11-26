@@ -164,7 +164,7 @@ _SEARCH_FLAGS = _AGENDA_FLAGS + [
 ]
 _SEARCH_VALUES = _AGENDA_VALUES + ["--limit", "-l", "--offset"]
 
-# Subcommands of anymoment 2.1. Global agent flags are added in _check_args.
+# Subcommands of anymoment 2.2. Global agent flags are added in _check_args.
 _WINDOW_FLAGS = ["--calendar", "-c", "--host", "-h", "--raw", "--pipe"]
 _WINDOW_VALUES = ["--calendar", "-c", "--host", "-h"]
 ANYMOMENT_COMMANDS: dict = {
@@ -318,6 +318,49 @@ ANYMOMENT_COMMANDS: dict = {
             ["--format", "--from", "--to", "--out"],
         ),
         "batch": _leaf(["--host", "-h"], 0, ["--host", "-h"]),
+        "add": _leaf(
+            [
+                "--title",
+                "-t",
+                "--start",
+                "--end",
+                "--all-day",
+                "--calendar",
+                "-c",
+                "--rrule",
+                "--description",
+                "-d",
+                "--location",
+                "--timezone",
+                "-z",
+                "--file",
+                "--host",
+                "-h",
+            ],
+            0,
+            [
+                "--title",
+                "-t",
+                "--start",
+                "--end",
+                "--calendar",
+                "-c",
+                "--rrule",
+                "--description",
+                "-d",
+                "--location",
+                "--timezone",
+                "-z",
+                "--file",
+                "--host",
+                "-h",
+            ],
+        ),
+        "import": _leaf(
+            ["--name", "--description", "-d", "--timezone", "-z", "--calendar", "-c", "--host", "-h"],
+            1,
+            ["--name", "--description", "-d", "--timezone", "-z", "--calendar", "-c", "--host", "-h"],
+        ),
     },
 }
 

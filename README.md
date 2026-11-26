@@ -13,10 +13,10 @@ n8n workflow template and community node: [n8n/](n8n/).
 **Before using this skill**, install the AnyMoment CLI so the `anymoment` command is available:
 
 ```bash
-pip install "anymoment[cli]>=2.1.0"
+pip install "anymoment[cli]>=2.2.0"
 ```
 
-AnyMoment 2.1 requires Python 3.10 or newer.
+AnyMoment 2.2 requires Python 3.10 or newer.
 
 - Use the same Python environment that your agent (e.g. OpenClaw) uses.
 - **Verify:** run `anymoment --version`. If the command is not found, add the Python `Scripts` (Windows) or `bin` (Unix) directory to `PATH`, or set `ANYMOMENT_BIN` to the full path of the `anymoment` executable.
@@ -55,7 +55,7 @@ AnyMoment 2.1 requires Python 3.10 or newer.
 
 3. **Install the CLI from PyPI** (on the machine where OpenClaw runs):
    ```bash
-   pip install "anymoment[cli]>=2.1.0"
+   pip install "anymoment[cli]>=2.2.0"
    anymoment --version
    ```
 

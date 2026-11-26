@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.0
+
+Requires `anymoment[cli]>=2.2.0`.
+
+- `am events add` creates events from exact fields (`--title`, `--start`, `--end`, `--all-day`, `--rrule`, and more) or from a JSON or JSONL file with `--file`. It does not parse text.
+- `am events import FILE.ics` creates events from an .ics file and can link them to a calendar.
+- `am auth status` checks the credential with the server and reports `valid`, `expired`, `invalid`, or `unknown`.
+
 ## 2.1.0
 
 Requires `anymoment[cli]>=2.1.0`.

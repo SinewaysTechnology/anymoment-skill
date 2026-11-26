@@ -1,6 +1,6 @@
-# AnyMoment CLI 2.1 (agent reference)
+# AnyMoment CLI 2.2 (agent reference)
 
-Requires `anymoment` / `am` from `pip install "anymoment[cli]>=2.1.0"`. AnyMoment 2.1 needs Python 3.10 or newer.
+Requires `anymoment` / `am` from `pip install "anymoment[cli]>=2.2.0"`. AnyMoment 2.2 needs Python 3.10 or newer.
 
 ## Auth
 
@@ -8,7 +8,7 @@ The user creates an API key in AnyMoment settings, in the API keys section. They
 
 Set `ANYMOMENT_API_KEY` for a job, or pass `--api-key` on one command. When either is set, it is used instead of `ANYMOMENT_TOKEN` and instead of a saved login. Do not print the key, repeat it, or write it to logs.
 
-Check with `am auth status`. It shows the method (`api_key`, `token`, `saved_login`, or `none`) and, for a key, the prefix (`am_live_` plus eight hex characters). It never prints the secret, and it does not call the API. `am auth status --json` prints `method` and `key_prefix` only. If the prefix is unrecognized, the value is not a key of that shape. Do not print the value.
+Check with `am auth status`. It shows the method (`api_key`, `token`, `saved_login`, or `none`) and, for a key, the prefix (`am_live_` plus eight hex characters). It never prints the secret. It checks the credential with the server and reports `status`: `valid`, `expired`, `invalid`, or `unknown` (server not reachable; retry), or `none` when no credential is set. `am auth status --json` prints `method`, `status`, `authenticated`, and, for a key, `key_prefix`. A failed login does not save a token. If the prefix is unrecognized, the value is not a key of that shape. Do not print the value.
 
 A session still works. Export `ANYMOMENT_TOKEN`, or on a TTY run `anymoment auth login` (stored under `~/.anymoment/`). Without a TTY, login needs `--email` and `--password`. `anymoment auth resend-verification` sends the verification email again. `anymoment auth logout` drops the saved token.
 
@@ -80,6 +80,9 @@ ISO bounds, when a phrase is not enough: `anymoment agenda list --start START --
 ## Writes
 
 - Create: `am events create "Team sync Tuesdays at 2pm" --calendar Work --dry-run`, then drop `--dry-run`.
+- Create from exact fields: `am events add --title "Dentist" --start 2026-12-04T10:00 --end 2026-12-04T11:00 --calendar Work --json`. This does not parse text. Add `--all-day` with dates only, `--rrule FREQ=WEEKLY;BYDAY=MO` for a rule, and `--description`, `--location`, `--timezone` as needed. `--location` is stored as a `Location:` line in the description.
+- Many exact events: `am events add --file events.jsonl --json` (JSON object, JSON array, or JSONL; `--file -` reads stdin). Each object takes `title` (or `name`), `start`, `end`, `all_day`, `calendar`, `rrule`, `description`, `location`, `timezone`.
+- Import: `am events import invite.ics --calendar Work --json` creates events from an .ics file and links them to the calendar. Use it for EXDATE, RDATE, or rules `events add` cannot represent.
 - Update: `am update EVENT_ID --when "every Tuesday at 11am" --title "New name" --yes`.
 - Delete: `am rm EVENT_ID --yes`.
 - Toggle: `anymoment events toggle EVENT_ID --json`.
@@ -90,7 +93,7 @@ A successful write can include `sync_warnings` or `google_export_warnings`. Rela
 
 `google_origin: true`, or `external_origin.read_only: true`, means the event is a mirror. Do not update or delete it. Tell the user to edit the source calendar.
 
-Recurrence belongs in the create or `--when` text: "every Monday", "weekdays at 9am", "on the 1st of every month". A single day without "every" is one event: "dentist next Friday at 10am". No clock time means all day.
+With `am events create`, recurrence belongs in the create or `--when` text: "every Monday", "weekdays at 9am", "on the 1st of every month". A single day without "every" is one event: "dentist next Friday at 10am". No clock time means all day.
 
 ## Free time
 
