@@ -2,6 +2,8 @@
 
 This folder is the **AnyMoment skill** for AI agents and humans: it teaches how to use the AnyMoment API via the `anymoment` CLI (create events from natural language, list agendas, find free time, manage calendars). The skill is AgentSkills-compatible (e.g. **OpenClaw**).
 
+n8n workflow template and community node: [n8n/](n8n/).
+
 - Package: https://pypi.org/project/anymoment/
 - SDK: https://github.com/SinewaysTechnology/anymoment-python
 - Docs: https://anymoment.sineways.tech/anymoment-python/docs

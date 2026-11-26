@@ -1,0 +1,47 @@
+{
+	"name": "n8n-nodes-anymoment",
+	"version": "0.1.0",
+	"description": "n8n community nodes for AnyMoment business-day rules and occurrence.due webhooks.",
+	"license": "MIT",
+	"homepage": "https://anymoment.sineways.tech/?ref=n8n-node",
+	"keywords": ["n8n-community-node-package"],
+	"author": {
+		"name": "Sineways Technology",
+		"email": "ari.claw.automations@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/SinewaysTechnology/anymoment-skill.git",
+		"directory": "n8n/nodes"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"test": "node --test test/*.test.mjs",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": ["dist"],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": ["dist/credentials/AnyMomentApi.credentials.js"],
+		"nodes": [
+			"dist/nodes/AnyMomentActions/AnyMomentActions.node.js",
+			"dist/nodes/AnyMomentTrigger/AnyMomentTrigger.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"release-it": "^21.1.0",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-anymoment.anyMomentActions",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Productivity"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://anymoment.sineways.tech/?ref=n8n-node"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/SinewaysTechnology/anymoment-skill/blob/main/n8n/nodes/README.md"
+			}
+		]
+	}
+}
