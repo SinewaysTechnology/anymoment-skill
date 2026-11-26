@@ -1,13 +1,13 @@
 ---
 name: anymoment
-description: Read and write AnyMoment calendars with the anymoment CLI 2.1. Use for today's agenda, free time, creating or updating events, and listing calendars.
+description: Read and write AnyMoment calendars with the anymoment CLI 2.2. Use for today's agenda, free time, creating or updating events, and listing calendars.
 ---
 
 # AnyMoment
 
-Install once: `pip install "anymoment[cli]>=2.1.0"`.
+Install once: `pip install "anymoment[cli]>=2.2.0"`.
 
-The user creates a key in AnyMoment settings, under API keys, and chooses access (`events:read`, `events:write`, `calendars:read`, `webhooks:manage`) and calendars. The CLI does not create, rotate, or revoke keys. Set `ANYMOMENT_API_KEY`, or pass `--api-key` on one command. A key is used instead of `ANYMOMENT_TOKEN` or a saved login. Check with `am auth status`. It shows the method and the key prefix, never the secret, and it does not call the API. Do not print the key or write it to logs. On a TTY, `anymoment auth login` still stores a session under `~/.anymoment/`.
+The user creates a key in AnyMoment settings, under API keys, and chooses access (`events:read`, `events:write`, `calendars:read`, `webhooks:manage`) and calendars. The CLI does not create, rotate, or revoke keys. Set `ANYMOMENT_API_KEY`, or pass `--api-key` on one command. A key is used instead of `ANYMOMENT_TOKEN` or a saved login. Check with `am auth status`. It shows the method and the key prefix, never the secret, and asks the server whether the credential is `valid`, `expired`, `invalid`, or `unknown`. Do not print the key or write it to logs. On a TTY, `anymoment auth login` still stores a session under `~/.anymoment/`.
 
 Lead with today, and ask only for the fields you will relay:
 
@@ -28,6 +28,8 @@ Lead with today, and ask only for the fields you will relay:
 - Another window: `am agenda "tomorrow" --json --fields events,failures`
 - Search: `am agenda search "standup" --json`
 - Create: `am events create "Team sync Tuesdays at 2pm" --dry-run`, then the same command without `--dry-run`
+- Create from exact fields (no text parsing): `am events add --title "Dentist" --start START --end END --calendar Work --json` (ISO 8601 times). Many at once: `am events add --file events.jsonl --json`
+- Import an .ics file: `am events import invite.ics --calendar Work --json`
 - Update: `am update EVENT_ID --title "New name" --yes`
 - Delete: `am rm EVENT_ID --yes`
 - Calendars: `am ls --json --fields result`
